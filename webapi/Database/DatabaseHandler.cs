@@ -28,10 +28,14 @@ public class DatabaseHandler : IDatabaseHandler
         }
     }
 
-    public async Task ExecuteQueryAsync(string query, Action<IDataReader> handleData)
+    public async Task ExecuteQueryAsync(string query, NpgsqlParameter[] parameters, Action<IDataReader> handleData)
     {
         await OpenConnectionAsync();
         await using var cmd = new NpgsqlCommand(query, _connection);
+        if (parameters.Length > 0) {
+            cmd.Parameters.AddRange(parameters);
+        }
+        
         await using var reader = await cmd.ExecuteReaderAsync();
         handleData(reader);
     }

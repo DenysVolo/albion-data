@@ -9,9 +9,9 @@ public class MarketOrder
     public int InitialAmount { get; set; }
     public int Amount { get; set; }
     public string AuctionType { get; set; }
-    public DateTimeOffset Expires { get; set; }
+    public DateTime Expires { get; set; }
     public int Location { get; set; }
-    public DateTimeOffset CreatedAt { get; set; }
-    public DateTimeOffset UpdatedAt { get; set; }
-    public DateTimeOffset? DeletedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public DateTime? DeletedAt { get; set; }
 }

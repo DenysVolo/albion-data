@@ -5,6 +5,9 @@ public class Startup
         services.AddSingleton<IDatabaseHandler, DatabaseHandler>();
         services.AddScoped<IQueryCatalogue, QueryCatalogue>();
 
+        services.AddSingleton<ILocationCatalogue, LocationCatalogue>();
+        services.AddSingleton<IItemCatalogue, ItemCatalogue>();
+
         services.AddControllers();
 
         services.AddLogging();
