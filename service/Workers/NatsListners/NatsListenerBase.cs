@@ -5,12 +5,12 @@ using Npgsql;
 
 namespace service
 {
-    public class NatsListenerBase<L>(ILogger<L> logger, IDatabaseHandler databaseHandler) : BackgroundService
+    public class NatsListenerBase<L>(ILogger<L> logger, IDatabaseHandler databaseHandler, INatsStatsTracker statsTracker) : BackgroundService
     {
         protected readonly ILogger<L> _logger = logger;
         private readonly IDatabaseHandler _dbHandler = databaseHandler;
 
-        protected int _messageCount = 0;
+        private readonly INatsStatsTracker _statsTracker = statsTracker;
 
         protected async Task SubscribeToTopic<T>(string url, string topic, ProccessItem<T> itemHandler, CancellationToken stoppingToken) {
             await _dbHandler.OpenConnectionAsync();
@@ -22,12 +22,7 @@ namespace service
 
             using IAsyncSubscription s = c.SubscribeAsync(topic, (sender, msgArgs) =>
             {
-                //Console.WriteLine($"Received message: {System.Text.Encoding.UTF8.GetString(msgArgs.Message.Data)}");
-                _messageCount += 1;
-                if (_messageCount % 100 == 0)
-                {
-                    _logger.LogInformation("{Name} messages recieved: {MessageCount}", GetType().Name, _messageCount);
-                }
+                _statsTracker.AddMessageCount(topic, 1);
 
                 var item = JsonSerializer.Deserialize<T>(msgArgs.Message.Data)!;
                 itemHandler(item);

@@ -2,23 +2,20 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using Npgsql;
 
-namespace service;
-
 public class DatabaseHandler : IDatabaseHandler, IDisposable
 {
     private readonly string _connectionString;
     private NpgsqlConnection _connection;
-    protected readonly ILogger<DatabaseHandler> _logger;
+
+    private INatsStatsTracker _statsTracker;
 
     private List<(string, NpgsqlParameter[])> _batchQueue;
-    private const int MaxBatchSize = 100;
+    private const int MaxBatchSize = 500;
     private readonly object _batchQueueLock = new();
 
-    private int _dbWriteCount = 0;
-
-    public DatabaseHandler(ILogger<DatabaseHandler> logger, IConfiguration configuration)
+    public DatabaseHandler(INatsStatsTracker statsTracker, IConfiguration configuration)
     {
-        _logger = logger;
+        _statsTracker = statsTracker;
         _connectionString = configuration.GetConnectionString("PostgresDb") ?? throw new MissingFieldException("Missing the Postgres connection string");;
         _connection = new NpgsqlConnection(_connectionString);
         _batchQueue = [];
@@ -68,8 +65,7 @@ public class DatabaseHandler : IDatabaseHandler, IDisposable
             }
 
             var rowsReturned = batch.ExecuteNonQuery();
-            _dbWriteCount += _batchQueue.Count;
-            _logger.LogInformation("Items written to db: {Count} ", _dbWriteCount);
+            _statsTracker.AddDbUpsertCount(_batchQueue.Count);
             _batchQueue = [];
             
             return rowsReturned;

@@ -2,7 +2,7 @@ using Npgsql;
 
 namespace service;
 
-public class MarketOrderListener(ILogger<MarketOrderListener> logger, IDatabaseHandler databaseHandler) : NatsListenerBase<MarketOrderListener>(logger, databaseHandler)
+public class MarketOrderListener(ILogger<MarketOrderListener> logger, IDatabaseHandler databaseHandler,  INatsStatsTracker statsTracker) : NatsListenerBase<MarketOrderListener>(logger, databaseHandler, statsTracker)
 {
     private const string CommandText =  @"
         INSERT INTO albiondb.market_orders (
@@ -61,16 +61,16 @@ public class MarketOrderListener(ILogger<MarketOrderListener> logger, IDatabaseH
     {
 
         var dbParams = new NpgsqlParameter[] {
-            new NpgsqlParameter("albion_id", NpgsqlTypes.NpgsqlDbType.Bigint) { Value = marketOrderItem.Id },
-            new NpgsqlParameter("item_id", NpgsqlTypes.NpgsqlDbType.Varchar, 255) { Value = marketOrderItem.ItemTypeId },
-            new NpgsqlParameter("quality_level", NpgsqlTypes.NpgsqlDbType.Smallint) { Value = marketOrderItem.QualityLevel },
-            new NpgsqlParameter("enchantment_level", NpgsqlTypes.NpgsqlDbType.Smallint) { Value = marketOrderItem.EnchantmentLevel },
-            new NpgsqlParameter("price", NpgsqlTypes.NpgsqlDbType.Bigint) { Value = marketOrderItem.UnitPriceSilver },
-            new NpgsqlParameter("initial_amount", NpgsqlTypes.NpgsqlDbType.Integer) { Value = marketOrderItem.Amount },
-            new NpgsqlParameter("amount", NpgsqlTypes.NpgsqlDbType.Integer) { Value = marketOrderItem.Amount },
-            new NpgsqlParameter("auction_type", NpgsqlTypes.NpgsqlDbType.Varchar, 255) { Value = marketOrderItem.AuctionType },
-            new NpgsqlParameter("expires", NpgsqlTypes.NpgsqlDbType.Timestamp) { Value = DateTime.Parse(marketOrderItem.Expires) },
-            new NpgsqlParameter("location", NpgsqlTypes.NpgsqlDbType.Smallint) { Value = marketOrderItem.LocationId }
+            new ("albion_id", NpgsqlTypes.NpgsqlDbType.Bigint) { Value = marketOrderItem.Id },
+            new ("item_id", NpgsqlTypes.NpgsqlDbType.Varchar, 255) { Value = marketOrderItem.ItemTypeId },
+            new ("quality_level", NpgsqlTypes.NpgsqlDbType.Smallint) { Value = marketOrderItem.QualityLevel },
+            new ("enchantment_level", NpgsqlTypes.NpgsqlDbType.Smallint) { Value = marketOrderItem.EnchantmentLevel },
+            new ("price", NpgsqlTypes.NpgsqlDbType.Bigint) { Value = marketOrderItem.UnitPriceSilver },
+            new ("initial_amount", NpgsqlTypes.NpgsqlDbType.Integer) { Value = marketOrderItem.Amount },
+            new ("amount", NpgsqlTypes.NpgsqlDbType.Integer) { Value = marketOrderItem.Amount },
+            new ("auction_type", NpgsqlTypes.NpgsqlDbType.Varchar, 255) { Value = marketOrderItem.AuctionType },
+            new ("expires", NpgsqlTypes.NpgsqlDbType.Timestamp) { Value = DateTime.Parse(marketOrderItem.Expires) },
+            new ("location", NpgsqlTypes.NpgsqlDbType.Smallint) { Value = marketOrderItem.LocationId }
         };
 
         AddDataToDB(CommandText, dbParams);

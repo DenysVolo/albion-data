@@ -2,7 +2,7 @@ using Npgsql;
 
 namespace service;
 
-public class MarketHistoryListener(ILogger<MarketHistoryListener> logger, IDatabaseHandler databaseHandler) : NatsListenerBase<MarketHistoryListener>(logger, databaseHandler)
+public class MarketHistoryListener(ILogger<MarketHistoryListener> logger, IDatabaseHandler databaseHandler, INatsStatsTracker statsTracker) : NatsListenerBase<MarketHistoryListener>(logger, databaseHandler, statsTracker)
 {
     private const string CommandText = @"
         INSERT INTO albiondb.market_history (
