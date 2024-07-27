@@ -5,7 +5,7 @@ public class ItemCatalogue : Item, IItemCatalogue {
     private const string DefaultRelativeItemDataPath = @"Data\files\items.txt";
 
     public ItemCatalogue(string relativeFilePath = DefaultRelativeItemDataPath) {
-        LoadItemTableFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), relativeFilePath));
+        LoadItemTableFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, relativeFilePath));
     }
 
     private void LoadItemTableFromFile(string filePath) {

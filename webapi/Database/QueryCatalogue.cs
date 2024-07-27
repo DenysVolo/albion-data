@@ -51,7 +51,7 @@ public class QueryCatalogue : IQueryCatalogue
         }
         if (itemNumId != null) {
             queryBuilder.WhereAttribute.Add("item_id=@p2");
-            parameters.Add(new NpgsqlParameter("p2", _itemCatalogue.GetItemByNumId(itemNumId.ToString()).Item2));
+            parameters.Add(new NpgsqlParameter("p2", _itemCatalogue.GetItemByNumId(itemNumId.ToString()!).Item2));
         }
         if (itemTextId != null) {
             queryBuilder.WhereAttribute.Add("item_id=@p3");
@@ -150,7 +150,7 @@ public class QueryCatalogue : IQueryCatalogue
         var query = "SELECT * FROM albiondb.market_history limit 100";
         var marketHistory = new List<MarketHistory>();
 
-        await _databaseHandler.ExecuteQueryAsync(query, null,  reader =>
+        await _databaseHandler.ExecuteQueryAsync(query, [],  reader =>
         {
             while (reader.Read())
             {

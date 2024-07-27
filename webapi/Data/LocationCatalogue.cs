@@ -5,7 +5,7 @@ public class LocationCatalogue : Location, ILocationCatalogue {
     private const string DefaultRelativeItemDataPath = @"Data\files\world.txt";
 
     public LocationCatalogue(string relativeFilePath = DefaultRelativeItemDataPath) {
-        LoadLocationTableFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), relativeFilePath));
+        LoadLocationTableFromFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, relativeFilePath));
     }
 
     private void LoadLocationTableFromFile(string filePath) {
