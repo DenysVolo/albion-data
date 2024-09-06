@@ -7,6 +7,7 @@ public class Startup
 
         services.AddSingleton<ILocationCatalogue, LocationCatalogue>();
         services.AddSingleton<IItemCatalogue, ItemCatalogue>();
+        services.AddSingleton<ISessionDatabase, InMemorySessionDatabase>();
 
         services.AddControllers();
 
