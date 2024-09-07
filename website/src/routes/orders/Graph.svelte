@@ -18,8 +18,8 @@ let chartData: ChartData<'line'> = {
     {
         label: 'Order Prices',
         data: [],
-        borderColor: 'rgba(255, 165, 0, 1)',
-        backgroundColor: 'rgba(255, 165, 0, 0.2)',
+        borderColor: 'rgb(119, 176, 170)',
+        backgroundColor: 'rgba(227, 254, 247,0.2)',
         fill: true,
         pointRadius: 5,
         pointHoverRadius: 7,
