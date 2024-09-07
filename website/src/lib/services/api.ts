@@ -3,7 +3,7 @@ export async function fetchOrders(params: Record<string, string | number | undef
 
   Object.keys(params).forEach((key) => {
     const value = params[key];
-    if (value !== undefined && value !== null) {
+    if (value !== undefined && value !== null && value !== "") {
       url.searchParams.append(key, String(value));
     }
   });
