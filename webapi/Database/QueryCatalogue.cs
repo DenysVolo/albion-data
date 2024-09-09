@@ -22,11 +22,9 @@ public class QueryCatalogue : IQueryCatalogue
         _inMemorySessionDatabase = sessionDatabase;
     }
 
-  
-
     public async Task<MarketOrderResponse> GetMarketOrdersAsync(
         MarketOrderRequest request,
-        int? limit = null,
+        int limit,
         string? sessionId = null)
     {
         if (sessionId == null || !_inMemorySessionDatabase.IsSessionIdActive(sessionId)) 
@@ -34,16 +32,20 @@ public class QueryCatalogue : IQueryCatalogue
             sessionId = _inMemorySessionDatabase.CreateSession(
                 nameof(MarketOrderRequest), 
                 JsonSerializer.Serialize(request), 
-                await GetRequestDataAsync(request, MarketOrdersTable, limit));
+                await GetRequestDataAsync(request, MarketOrdersTable, limit),
+                limit);
         }
         
-        else if(!Equals(typeof(MarketOrderRequest).ToString(), _inMemorySessionDatabase.GetRequestType(sessionId)) || !new DeepComparer<MarketOrderRequest>().Equals(request, JsonSerializer.Deserialize<MarketOrderRequest>(_inMemorySessionDatabase.GetRequestDetails(sessionId)))) 
+        else if(!Equals(typeof(MarketOrderRequest).ToString(), _inMemorySessionDatabase.GetRequestType(sessionId)) 
+        || !new DeepComparer<MarketOrderRequest>().Equals(request, JsonSerializer.Deserialize<MarketOrderRequest>(_inMemorySessionDatabase.GetRequestDetails(sessionId)))
+        || _inMemorySessionDatabase.GetSessionLimit(sessionId) != limit) 
         {
             _inMemorySessionDatabase.UpsertSession(
                 sessionId,
                 nameof(MarketOrderRequest), 
                 JsonSerializer.Serialize(request), 
-                await GetRequestDataAsync(request, MarketOrdersTable, limit));
+                await GetRequestDataAsync(request, MarketOrdersTable, limit),
+                limit);
         }
 
         var marketOrders = new List<MarketOrder>();
@@ -143,7 +145,7 @@ public class QueryCatalogue : IQueryCatalogue
             if (columnAttr != null)
             {
                 var value = property.GetValue(request);
-                AddQueryParameter(queryBuilder, parameters, columnAttr.Name, value, ref paramCounter);
+                AddQueryParameter(queryBuilder, parameters, columnAttr, value, ref paramCounter);
             }
         }
         queryBuilder.Limit = limit;
@@ -153,13 +155,13 @@ public class QueryCatalogue : IQueryCatalogue
         Console.WriteLine(queryBuilder.BuildQuery());
         await _databaseHandler.ExecuteQueryAsync(queryBuilder.BuildQuery(), parameters.ToArray(), requestData.Load);
 
-        return requestData;
+        return requestData; 
     }
 
    private void AddQueryParameter<T>(
         QueryBuilder queryBuilder, 
         List<NpgsqlParameter> parameters, 
-        string columnName, 
+        ColumnNameAttribute columnAttr, 
         T? value, 
         ref int paramCounter)
     {
@@ -180,14 +182,14 @@ public class QueryCatalogue : IQueryCatalogue
             }
             else
             {
-                queryBuilder.WhereAttribute.Add($"{columnName}=@{paramName}");
+                queryBuilder.WhereAttribute.Add($"{columnAttr.Name}{columnAttr.Comparator}@{paramName}");
                 parameters.Add(new NpgsqlParameter(paramName, value));
             }
         }
 
         void ProcessList<U>(IEnumerable<U> list, string paramName)
         {
-            queryBuilder.WhereAttribute.Add($"{columnName} IN ({string.Join(", ", list.Select(_ => "@" + paramName))})");
+            queryBuilder.WhereAttribute.Add($"{columnAttr.Name} IN ({string.Join(", ", list.Select(_ => "@" + paramName))})");
             foreach (var item in list)
             {
                 parameters.Add(new NpgsqlParameter(paramName, item));

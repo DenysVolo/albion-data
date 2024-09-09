@@ -15,6 +15,18 @@ public class Startup
 
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+
+        // Add CORS policy
+        services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll",
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -28,6 +40,7 @@ public class Startup
 
         app.UseRouting();
         app.UseHttpsRedirection();
+        app.UseCors("AllowAll");
 
         app.UseEndpoints(endpoints =>
         {

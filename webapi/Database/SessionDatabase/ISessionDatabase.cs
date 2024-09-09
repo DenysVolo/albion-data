@@ -11,16 +11,20 @@ public interface ISessionDatabase {
 
     DataTable GetRequestData(string sessionId);
 
+    int GetSessionLimit(string sessionId);
+
     string CreateSession(
         string requestType,
         string requestDetails,
-        DataTable requestData);
+        DataTable requestData,
+        int limit);
 
     void UpsertSession(
         string sessionId,
         string requestType,
         string requestDetails,
-        DataTable requestData);
+        DataTable requestData,
+        int limit);
         
     void SafeRemoveSession(string sessionId);
 }

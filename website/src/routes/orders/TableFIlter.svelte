@@ -2,6 +2,7 @@
     import { createEventDispatcher } from 'svelte'; 
 
     export let data: Array<Record<string, any>> = []; 
+    export let isLoading;
 
     let filters: Record<string, string> = {};
     let filteredData = data;
@@ -49,7 +50,13 @@
             }
         });
         } else {
-        filteredData = data;
+        filteredData = data.filter((row) => {
+        return Object.keys(filters).every((key) => {
+            const filterValue = filters[key]?.toLowerCase() || ''; 
+            const rowValue = row[key]?.toString().toLowerCase() || ''; 
+            return rowValue.includes(filterValue); 
+        });
+    });
         }
     }
 
@@ -64,7 +71,12 @@
     $: dispatch('filteredDataChange', filteredData, );
 
 </script>
-
+{#if isLoading}
+<div class="lds-roller-holder">
+    <div class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+    <p>Loading data...</p>
+</div>
+{:else}
 <div class="table-container" data-simplebar>
     <table>
         <thead>
@@ -113,5 +125,6 @@
         {/if}
         </tbody>
     </table>
+    
 </div>
-  
+{/if}

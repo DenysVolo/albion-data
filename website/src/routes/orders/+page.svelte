@@ -41,7 +41,8 @@
     maxCreationDate : '',
     minUpdateDate : '',
     maxUpdateDate : '',
-    sessionId : '',
+    limit : '',
+    sessionId : data.orders.sessionId,
   };
 
   $: isLoading = data && orders && orders.length === 0;
@@ -50,6 +51,7 @@
     isLoading = true;
     const response = await fetchOrders(filters);
     orders = response.orders;
+    filters.sessionId = response.sessionId;
     isLoading = false;
   }
 </script>
@@ -58,9 +60,7 @@
   <section>
     {#if error}
       <p class="error">{error}</p>
-    {:else if isLoading}
-      <p>Loading data...</p>
-    {:else if orders && orders.length > 0}
+    {:else if orders}
       <h1>Orders Data</h1>
 
       <button class="dropdown-button" on:click={toggleDropdown} aria-expanded={isDropdownOpen}>
@@ -71,7 +71,11 @@
         <FilterForm {filters} {applyFilters} />
       </div>
 
-      <TableFilter data={orders} on:filteredDataChange={handleFilteredDataChange} />
+      <!-- {#if isLoading}
+      <p>Loading Data...</p>
+      {:else} -->
+        <TableFilter data={orders} isLoading={isLoading} on:filteredDataChange={handleFilteredDataChange} />
+      <!-- {/if} -->
 
       <Graph filteredData={filteredOrders} />
     {:else}

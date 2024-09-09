@@ -8,6 +8,7 @@ public class InMemorySessionDatabase : ISessionDatabase{
     protected const string RequestDetailsColumn = "requestDetails";
     protected const string RequestDataColumn = "requestData";
     protected const string SessionStaleColumn = "sessionStale";
+    protected const string SessionLimitColumn = "sessionLimit";
 
     public InMemorySessionDatabase() {
         sessionTable  = new DataTable("Sessions");
@@ -35,6 +36,10 @@ public class InMemorySessionDatabase : ISessionDatabase{
 
         // Is session stale
         column = new DataColumn(SessionStaleColumn, typeof(bool));
+        sessionTable.Columns.Add(column);
+
+        // Request limit
+        column = new DataColumn(SessionLimitColumn, typeof(int));
         sessionTable.Columns.Add(column);
 
         // Make the Session UID the primary key
@@ -67,16 +72,22 @@ public class InMemorySessionDatabase : ISessionDatabase{
         return (DataTable)row[RequestDataColumn];
     }
 
+    public int GetSessionLimit(string sessionId) {
+        var row = sessionTable.Select($"{SessionIdColumn} = '{sessionId}'").First();
+        return (int)row[SessionLimitColumn];
+    }
+
     public string CreateSession(
         string requestType,
         string requestDetails,
-        DataTable requestData) 
+        DataTable requestData,
+        int limit) 
     {
         string sessionId;
         for (int i = 0; i < 5; i++) {
             sessionId =  Guid.NewGuid().ToString();
             if (!DoesSessionIdExist(sessionId)) {
-                UpsertSession(sessionId, requestType, requestDetails, requestData);
+                UpsertSession(sessionId, requestType, requestDetails, requestData, limit);
                 return sessionId;
             }
         }
@@ -88,7 +99,8 @@ public class InMemorySessionDatabase : ISessionDatabase{
         string sessionId,
         string requestType,
         string requestDetails,
-        DataTable requestData) 
+        DataTable requestData, 
+        int limit) 
     {        
         var row = sessionTable.NewRow();
         row[SessionIdColumn] = sessionId;
@@ -96,6 +108,7 @@ public class InMemorySessionDatabase : ISessionDatabase{
         row[RequestDetailsColumn] = requestDetails;
         row[RequestDataColumn] = requestData;
         row[SessionStaleColumn] = false;
+        row[SessionLimitColumn] = limit;
 
         if (DoesSessionIdExist(sessionId)) {
             SafeRemoveSession(sessionId);
